@@ -3,7 +3,7 @@ const SUPABASE_URL = "https://hsjrkfkzvbmbidceoqqk.supabase.co"; // Crucial: Rem
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzanJrZmt6dmJtYmlkY2VvcXFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0NDk2ODgsImV4cCI6MjEwNjAyNTY4OH0.DiXjPLs6TFq-01CljliHhYC7EDk5eHriraZzkfAwiCo";
 
 // FIXED: Renamed the instance variable to avoid crashing your browser on startup
-const supabaseClient = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Track global email string to pass into the OTP verification token function
 let registrationEmail = "";
