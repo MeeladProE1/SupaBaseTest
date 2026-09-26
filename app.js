@@ -1,7 +1,9 @@
-// 1. Initialize Supabase (REPLACE THESE STRINGS WITH YOUR ACTUAL KEYS FROM SETTINGS > API)
-const SUPABASE_URL = "https://hsjrkfkzvbmbidceoqqk.supabase.co/";
+// 1. Initialize Supabase
+const SUPABASE_URL = "https://hsjrkfkzvbmbidceoqqk.supabase.co"; // Crucial: Removed the trailing slash '/'
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzanJrZmt6dmJtYmlkY2VvcXFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0NDk2ODgsImV4cCI6MjEwNjAyNTY4OH0.DiXjPLs6TFq-01CljliHhYC7EDk5eHriraZzkfAwiCo";
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// FIXED: Renamed the instance variable to avoid crashing your browser on startup
+const supabaseClient = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Track global email string to pass into the OTP verification token function
 let registrationEmail = "";
@@ -27,7 +29,7 @@ document.getElementById('btn-signup').addEventListener('click', async () => {
 
     if (!email || !password) return alert("Please fill out all fields.");
 
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await supabaseClient.auth.signUp({ email, password });
 
     if (error) {
         alert("Error signing up: " + error.message);
@@ -44,7 +46,7 @@ document.getElementById('btn-verify').addEventListener('click', async () => {
 
     if (!code) return alert("Please enter the verification code.");
 
-    const { data, error } = await supabase.auth.verifyOtp({
+    const { data, error } = await supabaseClient.auth.verifyOtp({
         email: registrationEmail,
         token: code,
         type: 'signup'
@@ -65,7 +67,7 @@ document.getElementById('btn-login').addEventListener('click', async () => {
 
     if (!email || !password) return alert("Please fill out all fields.");
 
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
     if (error) {
         alert("Login failed: " + error.message);
@@ -77,7 +79,7 @@ document.getElementById('btn-login').addEventListener('click', async () => {
 
 // 5. GITHUB OAUTH SIGN-IN ACTION
 async function signInWithGitHub() {
-    const { data, error } = await supabase.auth.signInWithOAuth({
+    const { data, error } = await supabaseClient.auth.signInWithOAuth({
         provider: 'github',
         options: {
             redirectTo: window.location.href // Redirects users right back to your page when finished
