@@ -49,7 +49,7 @@ document.getElementById('btn-verify').addEventListener('click', async () => {
     const { data, error } = await supabaseClient.auth.verifyOtp({
         email: registrationEmail,
         token: code,
-        type: 'signup'
+        type: 'email' // FIX: Changed 'signup' to 'email' to match OTP expectations
     });
 
     if (error) {
@@ -59,6 +59,7 @@ document.getElementById('btn-verify').addEventListener('click', async () => {
         console.log("Logged in user identity context:", data.user);
     }
 });
+
 
 // 4. LOGIN ACTION (Standard Password Verification)
 document.getElementById('btn-login').addEventListener('click', async () => {
