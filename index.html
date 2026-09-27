@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Supabase Auth System</title>
     <!-- Stable fallback CDN provider to prevent connection timeouts -->
-    <script src="https://unpkg.com/@supabase/supabase-js/"></script>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com"></script>
     <style>
         body { font-family: Arial, sans-serif; background: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .auth-container { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 320px; }
@@ -51,6 +50,13 @@
         <p style="font-size: 14px; color: #555;">We sent a 6-digit code to your email.</p>
         <input type="text" id="verify-code" placeholder="6-Digit Token">
         <button id="btn-verify">Verify Email</button>
+    </div>
+
+    <!-- 4. DASHBOARD SCREEN (Shows up only after successful authentication) -->
+    <div id="dashboard-screen" class="screen">
+        <h2>Welcome to the App!</h2>
+        <p id="user-welcome-msg" style="font-size: 16px; color: #333; margin-bottom: 20px; word-wrap: break-word;"></p>
+        <button id="btn-logout" style="background: #ef4444;">Log Out</button>
     </div>
 </div>
 
