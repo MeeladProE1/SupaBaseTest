@@ -1,17 +1,18 @@
 // 1. Initialize Supabase
-const SUPABASE_URL = "https://hsjrkfkzvbmbidceoqqk.supabase.co"; // Crucial: Removed the trailing slash '/'
+const SUPABASE_URL = "https://supabase.co"; 
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzanJrZmt6dmJtYmlkY2VvcXFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0NDk2ODgsImV4cCI6MjEwNjAyNTY4OH0.DiXjPLs6TFq-01CljliHhYC7EDk5eHriraZzkfAwiCo";
 
-// FIXED: Renamed the instance variable to avoid crashing your browser on startup
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// FIXED: Using upper-case 'Supabase' from the CDN script file
+const supabaseClient = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Track global email string to pass into the OTP verification token function
 let registrationEmail = "";
 
 // Select DOM UI elements
 const loginScreen = document.getElementById('login-screen');
 const signupScreen = document.getElementById('signup-screen');
 const verifyScreen = document.getElementById('verify-screen');
+const dashboardScreen = document.getElementById('dashboard-screen');
+const welcomeMsg = document.getElementById('user-welcome-msg');
 
 // Handle navigation screen toggling
 document.getElementById('go-to-signup').addEventListener('click', () => switchScreen(signupScreen));
@@ -22,7 +23,21 @@ function switchScreen(activeScreen) {
     activeScreen.classList.add('active');
 }
 
-// 2. SIGNUP ACTION (Traditional Email & Password)
+// 2. AUTOMATIC LOGIN DETECTOR
+// This monitors the URL token data stream and flips your screen context dynamically!
+supabaseClient.auth.onAuthStateChange((event, session) => {
+    if (session) {
+        // Extract their metadata name if using GitHub, fallback to their email if using standard password flows
+        const displayName = session.user.user_metadata.full_name || session.user.email;
+        welcomeMsg.innerText = `Hello, ${displayName}! You have successfully logged in.`;
+        switchScreen(dashboardScreen);
+    } else {
+        // Clear screen state and reset context home if no session found
+        switchScreen(loginScreen);
+    }
+});
+
+// 3. SIGNUP ACTION (Traditional Email & Password)
 document.getElementById('btn-signup').addEventListener('click', async () => {
     const email = document.getElementById('signup-email').value;
     const password = document.getElementById('signup-password').value;
@@ -34,13 +49,13 @@ document.getElementById('btn-signup').addEventListener('click', async () => {
     if (error) {
         alert("Error signing up: " + error.message);
     } else {
-        registrationEmail = email; // Cache email for the next OTP confirmation check step
+        registrationEmail = email; // Cache layout string email for the verification method below
         alert("Account initialized! Check your email inbox for your 6-digit token.");
         switchScreen(verifyScreen);
     }
 });
 
-// 3. OTP VERIFICATION ACTION (Confirms Email via Code)
+// 4. OTP VERIFICATION ACTION (Confirms Email via Code)
 document.getElementById('btn-verify').addEventListener('click', async () => {
     const code = document.getElementById('verify-code').value;
 
@@ -49,19 +64,16 @@ document.getElementById('btn-verify').addEventListener('click', async () => {
     const { data, error } = await supabaseClient.auth.verifyOtp({
         email: registrationEmail,
         token: code,
-        type: 'email' // FIX: Changed 'signup' to 'email' to match OTP expectations
+        type: 'email' // Changed to 'email' to cleanly parse standard 6-digit verification code flows
     });
 
     if (error) {
         alert("Verification failed: " + error.message);
-    } else {
-        alert("Email verified successfully! You are logged in.");
-        console.log("Logged in user identity context:", data.user);
     }
+    // onAuthStateChange handles UI presentation instantly on success
 });
 
-
-// 4. LOGIN ACTION (Standard Password Verification)
+// 5. LOGIN ACTION (Standard Password Verification)
 document.getElementById('btn-login').addEventListener('click', async () => {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
@@ -72,18 +84,15 @@ document.getElementById('btn-login').addEventListener('click', async () => {
 
     if (error) {
         alert("Login failed: " + error.message);
-    } else {
-        alert("Welcome back! Successful login.");
-        console.log("Logged in user identity context:", data.user);
     }
 });
 
-// 5. GITHUB OAUTH SIGN-IN ACTION
+// 6. GITHUB OAUTH SIGN-IN ACTION
 async function signInWithGitHub() {
     const { data, error } = await supabaseClient.auth.signInWithOAuth({
         provider: 'github',
         options: {
-            redirectTo: window.location.href // Redirects users right back to your page when finished
+            redirectTo: window.location.href // Redirects back directly to your hosted page URL
         }
     });
 
@@ -92,6 +101,11 @@ async function signInWithGitHub() {
     }
 }
 
-// Bind OAuth redirect function to both GitHub action buttons
 document.getElementById('btn-github-login').addEventListener('click', signInWithGitHub);
 document.getElementById('btn-github-signup').addEventListener('click', signInWithGitHub);
+
+// 7. LOGOUT ACTION
+document.getElementById('btn-logout').addEventListener('click', async () => {
+    await supabaseClient.auth.signOut();
+    window.location.hash = ""; // Clean up the token leftovers in the URL bar area
+});
